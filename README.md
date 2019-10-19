@@ -1,5 +1,5 @@
 # Unity graphics settings plugin for BepInEx
-Exposes the game's graphics settings and other Unity related values for editing in ConfigurationManager.
+Exposes unity's graphics settings and some other values for editing in ConfigurationManager.
 
 ## How to use
 1. Install BepInEx
