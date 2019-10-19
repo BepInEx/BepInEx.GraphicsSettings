@@ -20,13 +20,6 @@ namespace GraphicsSettings
             SoftHard = UnityEngine.ShadowQuality.All
         }
 
-        public enum BackgroundRunMode
-        {
-            No,
-            Yes,
-            Limited
-        }
-
         public enum DisplayMode
         {
             Fullscreen,

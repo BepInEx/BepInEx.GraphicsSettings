@@ -33,9 +33,7 @@ namespace GraphicsSettings
         private const string DESCRIPTION_SHADOWNEARPLANEOFFSET = "A low shadow near plane offset value can create the appearance of holes in shadows.";
         private const string DESCRIPTION_CAMERANEARCLIPPLANE = "Determines how close the camera can be to objects without clipping into them. Lower equals closer.\n" +
                                                                "Note: The saved value is not loaded at the start currently.";
-        private const string DESCRIPTION_RUNINBACKGROUND = "Should the game be running when it is in the background (when the window is not focused)?\n" +
-                                                           "On \"no\", the game will stop completely when it is in the background.\n" +
-                                                           "On \"limited\", the game will stop if it has been unfocused and not loading anything for a couple seconds.";
+        private const string DESCRIPTION_RUNINBACKGROUND = "Should the game be running when it is in the background (when the window is not focused)?\n";
         private const string DESCRIPTION_OPTIMIZEINBACKGROUND = "Optimize the game when it is the background and unfocused. " +
                                                                 "Settings such as anti-aliasing will be turned off or reduced in this state.";
 
@@ -52,12 +50,11 @@ namespace GraphicsSettings
         private ConfigEntry<int> ShadowCascades { get; set; }
         private ConfigEntry<float> ShadowDistance { get; set; }
         private ConfigEntry<float> ShadowNearPlaneOffset { get; set; }
-        private ConfigEntry<SettingEnum.BackgroundRunMode> RunInBackground { get; set; }
+        private ConfigEntry<bool> RunInBackground { get; set; }
         private ConfigEntry<bool> OptimizeInBackground { get; set; }
 
         private string resolutionX = Screen.width.ToString();
         private string resolutionY = Screen.height.ToString();
-        private int focusFrameCounter = 0;
         private bool framerateToggle = false;
         private WinAPI.WindowStyleFlags backupStandard;
         private WinAPI.WindowStyleFlags backupExtended;
@@ -80,7 +77,7 @@ namespace GraphicsSettings
             ShadowCascades = Config.AddSetting(CATEGORY_SHADOW, "Shadow cascades", 4, new ConfigDescription(DESCRIPTION_SHADOWCASCADES, new AcceptableValueList<int>(0, 2, 4)));
             ShadowDistance = Config.AddSetting(CATEGORY_SHADOW, "Shadow distance", 50f, new ConfigDescription(DESCRIPTION_SHADOWDISTANCE, new AcceptableValueRange<float>(0f, 100f)));
             ShadowNearPlaneOffset = Config.AddSetting(CATEGORY_SHADOW, "Shadow near plane offset", 2f, new ConfigDescription(DESCRIPTION_SHADOWNEARPLANEOFFSET, new AcceptableValueRange<float>(0f, 4f)));
-            RunInBackground = Config.AddSetting(CATEGORY_GENERAL, "Run in background", SettingEnum.BackgroundRunMode.Yes, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
+            RunInBackground = Config.AddSetting(CATEGORY_GENERAL, "Run in background", true, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
             OptimizeInBackground = Config.AddSetting(CATEGORY_GENERAL, "Optimize in background", true, new ConfigDescription(DESCRIPTION_OPTIMIZEINBACKGROUND));
 
             if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
@@ -99,35 +96,13 @@ namespace GraphicsSettings
             InitSetting(ShadowCascades, () => QualitySettings.shadowCascades = ShadowCascades.Value);
             InitSetting(ShadowDistance, () => QualitySettings.shadowDistance = ShadowDistance.Value);
             InitSetting(ShadowNearPlaneOffset, () => QualitySettings.shadowNearPlaneOffset = ShadowNearPlaneOffset.Value);
-            InitSetting(RunInBackground, SetBackgroundRunMode);
-        }
-
-        private void Update()
-        {
-            if(RunInBackground.Value != SettingEnum.BackgroundRunMode.Limited)
-                return;
-
-            if(!Manager.Scene.Instance.IsNowLoadingFade)
-            {
-                // Run for a bunch of frames to let the game load anything it's currently loading (scenes, cards, etc)
-                // When loading it sometimes advances a frame at which point it would stop without this
-                if(focusFrameCounter < 100)
-                    focusFrameCounter++;
-                else if(focusFrameCounter == 100)
-                    Application.runInBackground = false;
-            }
+            InitSetting(RunInBackground, () => Application.runInBackground = RunInBackground.Value);
         }
 
         private void OnApplicationFocus(bool hasFocus)
         {
             if(OptimizeInBackground.Value)
                 QualitySettings.antiAliasing = hasFocus ? AntiAliasing.Value : 0;
-
-            if(RunInBackground.Value != SettingEnum.BackgroundRunMode.Limited)
-                return;
-
-            Application.runInBackground = true;
-            focusFrameCounter = 0;
         }
 
         private void ResolutionDrawer(ConfigEntryBase configEntry)
@@ -211,20 +186,6 @@ namespace GraphicsSettings
                     break;
                 case SettingEnum.DisplayMode.BorderlessFullscreen:
                     StartCoroutine(RemoveBorder());
-                    break;
-            }
-        }
-
-        private void SetBackgroundRunMode()
-        {
-            switch(RunInBackground.Value)
-            {
-                case SettingEnum.BackgroundRunMode.No:
-                    Application.runInBackground = false;
-                    break;
-                case SettingEnum.BackgroundRunMode.Limited:
-                case SettingEnum.BackgroundRunMode.Yes:
-                    Application.runInBackground = true;
                     break;
             }
         }
