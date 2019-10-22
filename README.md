@@ -3,7 +3,7 @@ Exposes unity's graphics settings and some other values for editing in Configura
 
 ## How to use
 1. Install BepInEx
-2. Download the latest [release](/releases/latest)
+2. Download the latest [release](https://github.com/BepInEx/BepInEx.GraphicsSettings/releases/latest)
 3. Put the dll file in the `bepinex/plugins` folder
 4. Install [ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager#readme)
 5. Open ConfigurationManager in game and change the settings
