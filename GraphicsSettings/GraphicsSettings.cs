@@ -12,11 +12,10 @@ namespace GraphicsSettings
     public class GraphicsSettings : BaseUnityPlugin
     {
         public const string GUID = "keelhauled.graphicssettings";
-        public const string Version = "1.1.0";
+        public const string Version = "1.2.0";
 
         private const string CATEGORY_GENERAL = "General";
         private const string CATEGORY_RENDER = "Rendering";
-        private const string CATEGORY_SHADOW = "Shadows";
 
         private const string DESCRIPTION_RESOLUTION = "Dummy setting for the custom drawer. Resolution is saved automatically by the game after clicking apply.";
         private const string DESCRIPTION_ANISOFILTER = "Improves distant textures when they are being viewer from indirect angles.";
@@ -26,13 +25,6 @@ namespace GraphicsSettings
         private const string DESCRIPTION_FRAMERATELIMIT = "Limits your framerate to whatever value is set. -1 equals unlocked framerate.\n" +
                                                           "VSync has to be disabled for this setting to take effect.";
         private const string DESCRIPTION_ANTIALIASING = "Smooths out jagged edges on objects.";
-        private const string DESCRIPTION_SHADOWPROJECTION = "Close Fit renders higher resolution shadows but they can sometimes wobble slightly if the camera moves." +
-                                                            "Stable Fit is lower resolution but no wobble.";
-        private const string DESCRIPTION_SHADOWCASCADES = "Increasing the number of cascades lessens the effects of perspective aliasing on shadows.";
-        private const string DESCRIPTION_SHADOWDISTANCE = "Increasing the distance lowers the shadow resolution slighly.";
-        private const string DESCRIPTION_SHADOWNEARPLANEOFFSET = "A low shadow near plane offset value can create the appearance of holes in shadows.";
-        private const string DESCRIPTION_CAMERANEARCLIPPLANE = "Determines how close the camera can be to objects without clipping into them. Lower equals closer.\n" +
-                                                               "Note: The saved value is not loaded at the start currently.";
         private const string DESCRIPTION_RUNINBACKGROUND = "Should the game be running when it is in the background (when the window is not focused)?\n";
         private const string DESCRIPTION_OPTIMIZEINBACKGROUND = "Optimize the game when it is the background and unfocused. " +
                                                                 "Settings such as anti-aliasing will be turned off or reduced in this state.";
@@ -44,12 +36,6 @@ namespace GraphicsSettings
         private ConfigEntry<int> FramerateLimit { get; set; }
         private ConfigEntry<int> AntiAliasing { get; set; }
         private ConfigEntry<AnisotropicFiltering> AnisotropicFiltering { get; set; }
-        private ConfigEntry<SettingEnum.ShadowQuality> ShadowQuality { get; set; }
-        private ConfigEntry<ShadowResolution> ShadowResolution { get; set; }
-        private ConfigEntry<ShadowProjection> ShadowProjection { get; set; }
-        private ConfigEntry<int> ShadowCascades { get; set; }
-        private ConfigEntry<float> ShadowDistance { get; set; }
-        private ConfigEntry<float> ShadowNearPlaneOffset { get; set; }
         private ConfigEntry<bool> RunInBackground { get; set; }
         private ConfigEntry<bool> OptimizeInBackground { get; set; }
 
@@ -71,12 +57,6 @@ namespace GraphicsSettings
             FramerateLimit = Config.AddSetting(CATEGORY_RENDER, "Framerate limit", -1, new ConfigDescription(DESCRIPTION_FRAMERATELIMIT, null, new ConfigurationManagerAttributes { Order = 6, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(FramerateLimitDrawer) }));
             AntiAliasing = Config.AddSetting(CATEGORY_RENDER, "Anti-aliasing multiplier", 4, new ConfigDescription(DESCRIPTION_ANTIALIASING, new AcceptableValueRange<int>(0, 8)));
             AnisotropicFiltering = Config.AddSetting(CATEGORY_RENDER, "Anisotropic filtering", UnityEngine.AnisotropicFiltering.ForceEnable, new ConfigDescription(DESCRIPTION_ANISOFILTER));
-            ShadowQuality = Config.AddSetting(CATEGORY_SHADOW, "Shadow quality", SettingEnum.ShadowQuality.SoftHard);
-            ShadowResolution = Config.AddSetting(CATEGORY_SHADOW, "Shadow resolution", UnityEngine.ShadowResolution.VeryHigh);
-            ShadowProjection = Config.AddSetting(CATEGORY_SHADOW, "Shadow projection", UnityEngine.ShadowProjection.CloseFit);
-            ShadowCascades = Config.AddSetting(CATEGORY_SHADOW, "Shadow cascades", 4, new ConfigDescription(DESCRIPTION_SHADOWCASCADES, new AcceptableValueList<int>(0, 2, 4)));
-            ShadowDistance = Config.AddSetting(CATEGORY_SHADOW, "Shadow distance", 50f, new ConfigDescription(DESCRIPTION_SHADOWDISTANCE, new AcceptableValueRange<float>(0f, 100f)));
-            ShadowNearPlaneOffset = Config.AddSetting(CATEGORY_SHADOW, "Shadow near plane offset", 2f, new ConfigDescription(DESCRIPTION_SHADOWNEARPLANEOFFSET, new AcceptableValueRange<float>(0f, 4f)));
             RunInBackground = Config.AddSetting(CATEGORY_GENERAL, "Run in background", true, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
             OptimizeInBackground = Config.AddSetting(CATEGORY_GENERAL, "Optimize in background", true, new ConfigDescription(DESCRIPTION_OPTIMIZEINBACKGROUND));
 
@@ -90,12 +70,6 @@ namespace GraphicsSettings
             InitSetting(VSync, () => QualitySettings.vSyncCount = (int)VSync.Value);
             InitSetting(AntiAliasing, () => QualitySettings.antiAliasing = AntiAliasing.Value);
             InitSetting(AnisotropicFiltering, () => QualitySettings.anisotropicFiltering = AnisotropicFiltering.Value);
-            InitSetting(ShadowQuality, () => QualitySettings.shadows = (ShadowQuality)ShadowQuality.Value);
-            InitSetting(ShadowResolution, () => QualitySettings.shadowResolution = ShadowResolution.Value);
-            InitSetting(ShadowProjection, () => QualitySettings.shadowProjection = ShadowProjection.Value);
-            InitSetting(ShadowCascades, () => QualitySettings.shadowCascades = ShadowCascades.Value);
-            InitSetting(ShadowDistance, () => QualitySettings.shadowDistance = ShadowDistance.Value);
-            InitSetting(ShadowNearPlaneOffset, () => QualitySettings.shadowNearPlaneOffset = ShadowNearPlaneOffset.Value);
             InitSetting(RunInBackground, () => Application.runInBackground = RunInBackground.Value);
         }
 

@@ -11,15 +11,6 @@ namespace GraphicsSettings
             Half
         }
 
-        public enum ShadowQuality
-        {
-            Disabled = UnityEngine.ShadowQuality.Disable,
-            [Description("Hard only")]
-            HardOnly = UnityEngine.ShadowQuality.HardOnly,
-            [Description("Soft and hard")]
-            SoftHard = UnityEngine.ShadowQuality.All
-        }
-
         public enum DisplayMode
         {
             Fullscreen,
