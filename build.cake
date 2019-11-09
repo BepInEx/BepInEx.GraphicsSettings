@@ -80,14 +80,24 @@ Task("Pack")
 
     Information("Packing");
     ZipCompress(pluginDir, distDir + File($"GraphicsSettings{commitPrefix}{buildVersion}.zip"));
+    
 
     if(isBleedingEdge) 
     {
+        var changelog = "";
+
+        if(!string.IsNullOrEmpty(lastBuildCommit)) {
+            changelog = TransformText("<ul><%changelog%></ul>")
+                        .WithToken("changelog", RunGit($"--no-pager log --no-merges --pretty=\"format:<li>(<code>%h</code>) [%an] %s</li>\" {lastBuildCommit}..HEAD"))
+                        .ToString();
+        }
+
         FileWriteText(distDir + File("info.json"), 
             SerializeJsonPretty(new Dictionary<string, object>{
                 ["id"] = buildId.ToString(),
                 ["date"] = DateTime.Now.ToString("o"),
-                ["changelog"] = "",
+                ["changelog"] = changelog,
+                ["hash"] = currentCommit,
                 ["artifacts"] = new Dictionary<string, object>[] {
                     new Dictionary<string, object> {
                         ["file"] = $"GraphicsSettings{commitPrefix}{buildVersion}.zip",
