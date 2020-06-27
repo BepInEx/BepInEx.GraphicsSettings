@@ -3,7 +3,7 @@ Exposes unity's graphics settings and some other values for editing in Configura
 
 ## How to use
 1. Install BepInEx
-2. Download the latest [release](https://builds.bepis.io/projects/bepinex_graphics_settings)
+2. Download the latest [release](https://github.com/BepInEx/BepInEx.GraphicsSettings/releases)
 3. Put the dll file in the `bepinex/plugins` folder
 4. Install [ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager#readme)
 5. Open ConfigurationManager in game and change the settings
@@ -11,6 +11,6 @@ Exposes unity's graphics settings and some other values for editing in Configura
 ## Settings
 
 Display mode can be set to either fullscreen, windowed, or borderless window.  
-Background optimization only disables the anti-aliasing at the moment.
+Background optimization only disables anti-aliasing at the moment.
 
 <p align="center"><img src="https://raw.githubusercontent.com/BepInEx/BepInEx.GraphicsSettings/master/settings.jpg?raw=true" alt="settings list"/></p>
