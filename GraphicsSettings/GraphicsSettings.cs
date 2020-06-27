@@ -12,7 +12,7 @@ namespace GraphicsSettings
     public class GraphicsSettings : BaseUnityPlugin
     {
         public const string GUID = "keelhauled.graphicssettings";
-        public const string Version = "1.2.0";
+        public const string Version = "1.2.1";
 
         private const string CATEGORY_GENERAL = "General";
         private const string CATEGORY_RENDER = "Rendering";
