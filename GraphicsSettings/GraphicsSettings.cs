@@ -12,7 +12,7 @@ namespace GraphicsSettings
     public class GraphicsSettings : BaseUnityPlugin
     {
         public const string GUID = "keelhauled.graphicssettings";
-        public const string Version = "1.2.1";
+        public const string Version = "1.3";
 
         private const string CATEGORY_GENERAL = "General";
         private const string CATEGORY_RENDER = "Rendering";
@@ -34,9 +34,9 @@ namespace GraphicsSettings
         private ConfigEntry<int> SelectedMonitor { get; set; }
         private ConfigEntry<SettingEnum.VSyncType> VSync { get; set; }
         private ConfigEntry<int> FramerateLimit { get; set; }
-        private ConfigEntry<int> AntiAliasing { get; set; }
-        private ConfigEntry<AnisotropicFiltering> AnisotropicFiltering { get; set; }
-        private ConfigEntry<bool> RunInBackground { get; set; }
+        private ConfigEntry<SettingEnum.AntiAliasingMode> AntiAliasing { get; set; }
+        private ConfigEntry<SettingEnum.AnisotropicFilteringMode> AnisotropicFiltering { get; set; }
+        private ConfigEntry<SettingEnum.RunInBackgroundMode> RunInBackground { get; set; }
         private ConfigEntry<bool> OptimizeInBackground { get; set; }
 
         private string resolutionX = Screen.width.ToString();
@@ -51,13 +51,13 @@ namespace GraphicsSettings
         private void Awake()
         {
             Resolution = Config.AddSetting(CATEGORY_RENDER, "Resolution", "", new ConfigDescription(DESCRIPTION_RESOLUTION, null, new ConfigurationManagerAttributes { Order = 9, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(ResolutionDrawer) }));
-            DisplayMode = Config.AddSetting(CATEGORY_RENDER, "Display mode", SettingEnum.DisplayMode.Windowed, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 10 }));
+            DisplayMode = Config.AddSetting(CATEGORY_RENDER, "Display mode", SettingEnum.DisplayMode.Default, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 10 }));
             SelectedMonitor = Config.AddSetting(CATEGORY_RENDER, "Selected monitor", 0, new ConfigDescription("", new AcceptableValueList<int>(Enumerable.Range(0, Display.displays.Length).ToArray()), new ConfigurationManagerAttributes { Order = 8 }));
-            VSync = Config.AddSetting(CATEGORY_RENDER, "VSync", (SettingEnum.VSyncType)QualitySettings.vSyncCount, new ConfigDescription(DESCRIPTION_VSYNC, null, new ConfigurationManagerAttributes { Order = 7 }));
-            FramerateLimit = Config.AddSetting(CATEGORY_RENDER, "Framerate limit", -1, new ConfigDescription(DESCRIPTION_FRAMERATELIMIT, null, new ConfigurationManagerAttributes { Order = 6, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(FramerateLimitDrawer) }));
-            AntiAliasing = Config.AddSetting(CATEGORY_RENDER, "Anti-aliasing multiplier", QualitySettings.antiAliasing, new ConfigDescription(DESCRIPTION_ANTIALIASING, new AcceptableValueRange<int>(0, 8)));
-            AnisotropicFiltering = Config.AddSetting(CATEGORY_RENDER, "Anisotropic filtering", QualitySettings.anisotropicFiltering, new ConfigDescription(DESCRIPTION_ANISOFILTER));
-            RunInBackground = Config.AddSetting(CATEGORY_GENERAL, "Run in background", true, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
+            VSync = Config.AddSetting(CATEGORY_RENDER, "VSync", SettingEnum.VSyncType.Default, new ConfigDescription(DESCRIPTION_VSYNC, null, new ConfigurationManagerAttributes { Order = 7 }));
+            FramerateLimit = Config.AddSetting(CATEGORY_RENDER, "Framerate limit", Application.targetFrameRate, new ConfigDescription(DESCRIPTION_FRAMERATELIMIT, null, new ConfigurationManagerAttributes { Order = 6, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(FramerateLimitDrawer) }));
+            AntiAliasing = Config.AddSetting(CATEGORY_RENDER, "Anti-aliasing multiplier", SettingEnum.AntiAliasingMode.Default, new ConfigDescription(DESCRIPTION_ANTIALIASING));
+            AnisotropicFiltering = Config.AddSetting(CATEGORY_RENDER, "Anisotropic filtering", SettingEnum.AnisotropicFilteringMode.Default, new ConfigDescription(DESCRIPTION_ANISOFILTER));
+            RunInBackground = Config.AddSetting(CATEGORY_GENERAL, "Run in background", SettingEnum.RunInBackgroundMode.Default, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
             OptimizeInBackground = Config.AddSetting(CATEGORY_GENERAL, "Optimize in background", true, new ConfigDescription(DESCRIPTION_OPTIMIZEINBACKGROUND));
 
             if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
@@ -67,16 +67,43 @@ namespace GraphicsSettings
             SelectedMonitor.SettingChanged += (sender, args) => StartCoroutine(SelectMonitor());
 
             InitSetting(FramerateLimit, SetFramerateLimit);
-            InitSetting(VSync, () => QualitySettings.vSyncCount = (int)VSync.Value);
-            InitSetting(AntiAliasing, () => QualitySettings.antiAliasing = AntiAliasing.Value);
-            InitSetting(AnisotropicFiltering, () => QualitySettings.anisotropicFiltering = AnisotropicFiltering.Value);
-            InitSetting(RunInBackground, () => Application.runInBackground = RunInBackground.Value);
+            InitSetting(VSync, () =>
+            {
+                if(VSync.Value != SettingEnum.VSyncType.Default)
+                    QualitySettings.vSyncCount = (int)VSync.Value;
+            });
+            InitSetting(AntiAliasing, () =>
+            {
+                if(AntiAliasing.Value != SettingEnum.AntiAliasingMode.Default)
+                    QualitySettings.antiAliasing = (int)AntiAliasing.Value;
+            });
+            InitSetting(AnisotropicFiltering, () =>
+            {
+                if(AnisotropicFiltering.Value != SettingEnum.AnisotropicFilteringMode.Default)
+                    QualitySettings.anisotropicFiltering = (AnisotropicFiltering)AnisotropicFiltering.Value;
+            });
+            InitSetting(RunInBackground, () =>
+            {
+                if(RunInBackground.Value != SettingEnum.RunInBackgroundMode.Default)
+                    Application.runInBackground = RunInBackground.Value == SettingEnum.RunInBackgroundMode.Yes;
+            });
         }
 
+        private int lastAntiAliasingValue = -1;
         private void OnApplicationFocus(bool hasFocus)
         {
             if(OptimizeInBackground.Value)
-                QualitySettings.antiAliasing = hasFocus ? AntiAliasing.Value : 0;
+            {
+                if (lastAntiAliasingValue < 0 || !hasFocus)
+                    lastAntiAliasingValue = QualitySettings.antiAliasing;
+
+                if (!hasFocus)
+                    QualitySettings.antiAliasing = 0;
+                else if (AntiAliasing.Value != SettingEnum.AntiAliasingMode.Default)
+                    QualitySettings.antiAliasing = (int)AntiAliasing.Value;
+                else
+                    QualitySettings.antiAliasing = lastAntiAliasingValue;
+            }
         }
 
         private void ResolutionDrawer(ConfigEntryBase configEntry)
@@ -123,7 +150,8 @@ namespace GraphicsSettings
             var toggle = GUILayout.Toggle(framerateToggle, "Enabled", GUILayout.Width(70));
             if(toggle != framerateToggle)
             {
-                if(framerateToggle = toggle)
+                framerateToggle = toggle;
+                if(toggle)
                 {
                     var refreshRate = Screen.currentResolution.refreshRate;
                     FramerateLimit.Value = refreshRate;
@@ -160,6 +188,8 @@ namespace GraphicsSettings
                     break;
                 case SettingEnum.DisplayMode.BorderlessFullscreen:
                     StartCoroutine(RemoveBorder());
+                    break;
+                case SettingEnum.DisplayMode.Default:
                     break;
             }
         }
