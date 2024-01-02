@@ -127,8 +127,8 @@ namespace GraphicsSettings
             if(GUILayout.Button("Reset", GUILayout.ExpandWidth(false)))
             {
                 var display = Display.displays[SelectedMonitor.Value];
-                if(Screen.width != display.renderingWidth || Screen.height != display.renderingHeight)
-                    StartCoroutine(SetResolution(display.renderingWidth, display.renderingHeight));
+                if(Screen.width != display.systemWidth || Screen.height != display.systemHeight)
+                    StartCoroutine(SetResolution(display.systemWidth, display.systemHeight));
             }
 
             IEnumerator SetResolution(int width, int height)
