@@ -52,15 +52,15 @@ namespace GraphicsSettings
 
         private void Awake()
         {
-            Resolution = Config.AddSetting(CATEGORY_RENDER, "Resolution", "", new ConfigDescription(DESCRIPTION_RESOLUTION, null, new ConfigurationManagerAttributes { Order = 9, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(ResolutionDrawer) }));
-            DisplayMode = Config.AddSetting(CATEGORY_RENDER, "Display mode", SettingEnum.DisplayMode.Default, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 10 }));
-            SelectedMonitor = Config.AddSetting(CATEGORY_RENDER, "Selected monitor", 0, new ConfigDescription("", new AcceptableValueList<int>(Enumerable.Range(0, Display.displays.Length).ToArray()), new ConfigurationManagerAttributes { Order = 8 }));
-            VSync = Config.AddSetting(CATEGORY_RENDER, "VSync", SettingEnum.VSyncType.Default, new ConfigDescription(DESCRIPTION_VSYNC, null, new ConfigurationManagerAttributes { Order = 7 }));
-            FramerateLimit = Config.AddSetting(CATEGORY_RENDER, "Framerate limit", Application.targetFrameRate, new ConfigDescription(DESCRIPTION_FRAMERATELIMIT, null, new ConfigurationManagerAttributes { Order = 6, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(FramerateLimitDrawer) }));
-            AntiAliasing = Config.AddSetting(CATEGORY_RENDER, "Anti-aliasing multiplier", SettingEnum.AntiAliasingMode.Default, new ConfigDescription(DESCRIPTION_ANTIALIASING));
-            AnisotropicFiltering = Config.AddSetting(CATEGORY_RENDER, "Anisotropic filtering", SettingEnum.AnisotropicFilteringMode.Default, new ConfigDescription(DESCRIPTION_ANISOFILTER));
-            RunInBackground = Config.AddSetting(CATEGORY_GENERAL, "Run in background", SettingEnum.RunInBackgroundMode.Default, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
-            OptimizeInBackground = Config.AddSetting(CATEGORY_GENERAL, "Optimize in background", true, new ConfigDescription(DESCRIPTION_OPTIMIZEINBACKGROUND));
+            Resolution = Config.Bind(CATEGORY_RENDER, "Resolution", "", new ConfigDescription(DESCRIPTION_RESOLUTION, null, new ConfigurationManagerAttributes { Order = 9, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(ResolutionDrawer) }));
+            DisplayMode = Config.Bind(CATEGORY_RENDER, "Display mode", SettingEnum.DisplayMode.Default, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 10 }));
+            SelectedMonitor = Config.Bind(CATEGORY_RENDER, "Selected monitor", 0, new ConfigDescription("", new AcceptableValueList<int>(Enumerable.Range(0, Display.displays.Length).ToArray()), new ConfigurationManagerAttributes { Order = 8 }));
+            VSync = Config.Bind(CATEGORY_RENDER, "VSync", SettingEnum.VSyncType.Default, new ConfigDescription(DESCRIPTION_VSYNC, null, new ConfigurationManagerAttributes { Order = 7 }));
+            FramerateLimit = Config.Bind(CATEGORY_RENDER, "Framerate limit", Application.targetFrameRate, new ConfigDescription(DESCRIPTION_FRAMERATELIMIT, null, new ConfigurationManagerAttributes { Order = 6, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(FramerateLimitDrawer) }));
+            AntiAliasing = Config.Bind(CATEGORY_RENDER, "Anti-aliasing multiplier", SettingEnum.AntiAliasingMode.Default, new ConfigDescription(DESCRIPTION_ANTIALIASING));
+            AnisotropicFiltering = Config.Bind(CATEGORY_RENDER, "Anisotropic filtering", SettingEnum.AnisotropicFilteringMode.Default, new ConfigDescription(DESCRIPTION_ANISOFILTER));
+            RunInBackground = Config.Bind(CATEGORY_GENERAL, "Run in background", SettingEnum.RunInBackgroundMode.Default, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
+            OptimizeInBackground = Config.Bind(CATEGORY_GENERAL, "Optimize in background", true, new ConfigDescription(DESCRIPTION_OPTIMIZEINBACKGROUND));
 
             if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
                 StartCoroutine(RemoveBorder());
