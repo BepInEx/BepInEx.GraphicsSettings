@@ -6,6 +6,8 @@ using System.Collections;
 using System.Linq;
 using UnityEngine;
 
+[assembly: System.Reflection.AssemblyFileVersion(GraphicsSettings.GraphicsSettings.Version)]
+
 namespace GraphicsSettings
 {
     [BepInPlugin(GUID, "Graphics Settings", Version)]
