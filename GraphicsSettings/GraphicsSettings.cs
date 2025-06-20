@@ -50,6 +50,12 @@ namespace GraphicsSettings
         private UnityEngine.Object configManager;
         private bool configManagerSearch = false;
 
+        private void Start()
+        {
+            if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
+                StartCoroutine(RemoveBorder());
+        }
+
         private void Awake()
         {
             Resolution = Config.Bind(CATEGORY_RENDER, "Resolution", "", new ConfigDescription(DESCRIPTION_RESOLUTION, null, new ConfigurationManagerAttributes { Order = 9, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(ResolutionDrawer) }));
@@ -61,9 +67,6 @@ namespace GraphicsSettings
             AnisotropicFiltering = Config.Bind(CATEGORY_RENDER, "Anisotropic filtering", SettingEnum.AnisotropicFilteringMode.Default, new ConfigDescription(DESCRIPTION_ANISOFILTER));
             RunInBackground = Config.Bind(CATEGORY_GENERAL, "Run in background", SettingEnum.RunInBackgroundMode.Default, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
             OptimizeInBackground = Config.Bind(CATEGORY_GENERAL, "Optimize in background", true, new ConfigDescription(DESCRIPTION_OPTIMIZEINBACKGROUND));
-
-            if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
-                StartCoroutine(RemoveBorder());
 
             DisplayMode.SettingChanged += (sender, args) => SetDisplayMode();
             SelectedMonitor.SettingChanged += (sender, args) => StartCoroutine(SelectMonitor());
