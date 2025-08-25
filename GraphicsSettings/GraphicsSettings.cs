@@ -43,6 +43,8 @@ namespace GraphicsSettings
 
         private string resolutionX = Screen.width.ToString();
         private string resolutionY = Screen.height.ToString();
+        private int origResolutionX = Screen.width;
+        private int origResolutionY = Screen.height;
         private bool framerateToggle = false;
         private WinAPI.WindowStyleFlags backupStandard;
         private WinAPI.WindowStyleFlags backupExtended;
@@ -132,8 +134,8 @@ namespace GraphicsSettings
             if(GUILayout.Button("Reset", GUILayout.ExpandWidth(false)))
             {
                 var display = Display.displays[SelectedMonitor.Value];
-                if(Screen.width != display.systemWidth || Screen.height != display.systemHeight)
-                    StartCoroutine(SetResolution(display.systemWidth, display.systemHeight));
+                if(Screen.width != origResolutionX || Screen.height != origResolutionY)
+                    StartCoroutine(SetResolution(origResolutionX, origResolutionY));
             }
 
             IEnumerator SetResolution(int width, int height)
