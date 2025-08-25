@@ -19,7 +19,7 @@ namespace GraphicsSettings
         private const string CATEGORY_GENERAL = "General";
         private const string CATEGORY_RENDER = "Rendering";
 
-        private const string DESCRIPTION_RESOLUTION = "Dummy setting for the custom drawer. Resolution is saved automatically by the game after clicking apply.";
+        private const string DESCRIPTION_RESOLUTION = "Override setting for the custom drawer. If resolution changes are not being saved automatically by the game after clicking apply, the resolution can be forcibly set using this value. e.g. 1920x1080";
         private const string DESCRIPTION_ANISOFILTER = "Improves distant textures when they are being viewer from indirect angles.";
         private const string DESCRIPTION_VSYNC = "VSync synchronizes the output video of the graphics card to the refresh rate of the monitor. " +
                                                  "This prevents tearing and produces a smoother video output.\n" +
@@ -32,6 +32,7 @@ namespace GraphicsSettings
                                                                 "Settings such as anti-aliasing will be turned off or reduced in this state.";
 
         private ConfigEntry<string> Resolution { get; set; }
+        private bool useResolutionConfig = false;
         private ConfigEntry<SettingEnum.DisplayMode> DisplayMode { get; set; }
         private ConfigEntry<int> SelectedMonitor { get; set; }
         private ConfigEntry<SettingEnum.VSyncType> VSync { get; set; }
@@ -56,6 +57,17 @@ namespace GraphicsSettings
         {
             if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
                 StartCoroutine(RemoveBorder());
+
+            // If the resolution was actually set in the config, go ahead and apply it
+            string[] dimensions = Resolution.Value.ToLower().Split('x', ',', ' ', '\t');
+            if (dimensions.Length == 2)
+            {
+                int x = int.Parse(dimensions[0]);
+                int y = int.Parse(dimensions[1]);
+
+                StartCoroutine(SetResolution(x, y));
+                useResolutionConfig = true;
+            }
         }
 
         private void Awake()
@@ -137,19 +149,22 @@ namespace GraphicsSettings
                 if(Screen.width != origResolutionX || Screen.height != origResolutionY)
                     StartCoroutine(SetResolution(origResolutionX, origResolutionY));
             }
+        }
 
-            IEnumerator SetResolution(int width, int height)
-            {
-                Screen.SetResolution(width, height, Screen.fullScreen);
-                yield return null;
+        IEnumerator SetResolution(int width, int height)
+        {
+            Screen.SetResolution(width, height, Screen.fullScreen);
+            yield return null;
 
-                UpdateConfigManagerSize();
-                resolutionX = Screen.width.ToString();
-                resolutionY = Screen.height.ToString();
+            UpdateConfigManagerSize();
+            resolutionX = Screen.width.ToString();
+            resolutionY = Screen.height.ToString();
 
-                if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
-                    StartCoroutine(RemoveBorder());
-            }
+            if(useResolutionConfig)
+                Resolution.BoxedValue = $"{resolutionX}x{resolutionY}";
+
+            if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
+                StartCoroutine(RemoveBorder());
         }
 
         private void FramerateLimitDrawer(ConfigEntryBase configEntry)
