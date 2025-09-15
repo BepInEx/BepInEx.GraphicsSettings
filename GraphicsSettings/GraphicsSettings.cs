@@ -153,7 +153,7 @@ namespace GraphicsSettings
                 Resolution.BoxedValue = "";
             }
 
-                GUILayout.Space(5);
+            GUILayout.Space(5);
             if(GUILayout.Button("Reset", GUILayout.ExpandWidth(false)))
             {
                 var display = Display.displays[SelectedMonitor.Value];
