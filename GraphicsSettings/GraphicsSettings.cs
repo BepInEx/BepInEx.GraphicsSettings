@@ -19,7 +19,7 @@ namespace GraphicsSettings
         private const string CATEGORY_GENERAL = "General";
         private const string CATEGORY_RENDER = "Rendering";
 
-        private const string DESCRIPTION_RESOLUTION = "Override setting for the custom drawer. If resolution changes are not being saved automatically by the game after clicking apply, the resolution can be forcibly set using this value. e.g. 1920x1080";
+        private const string DESCRIPTION_RESOLUTION = "Desired resolution. After clicking apply, resolution changes are usually automatically remembered by the game. If not, use this value to save the desired resolution. e.g. 1920x1080";
         private const string DESCRIPTION_ANISOFILTER = "Improves distant textures when they are being viewer from indirect angles.";
         private const string DESCRIPTION_VSYNC = "VSync synchronizes the output video of the graphics card to the refresh rate of the monitor. " +
                                                  "This prevents tearing and produces a smoother video output.\n" +
@@ -32,7 +32,6 @@ namespace GraphicsSettings
                                                                 "Settings such as anti-aliasing will be turned off or reduced in this state.";
 
         private ConfigEntry<string> Resolution { get; set; }
-        private bool useResolutionConfig = false;
         private ConfigEntry<SettingEnum.DisplayMode> DisplayMode { get; set; }
         private ConfigEntry<int> SelectedMonitor { get; set; }
         private ConfigEntry<SettingEnum.VSyncType> VSync { get; set; }
@@ -44,8 +43,6 @@ namespace GraphicsSettings
 
         private string resolutionX = Screen.width.ToString();
         private string resolutionY = Screen.height.ToString();
-        private int origResolutionX = Screen.width;
-        private int origResolutionY = Screen.height;
         private bool framerateToggle = false;
         private WinAPI.WindowStyleFlags backupStandard;
         private WinAPI.WindowStyleFlags backupExtended;
@@ -60,13 +57,18 @@ namespace GraphicsSettings
 
             // If the resolution was actually set in the config, go ahead and apply it
             string[] dimensions = Resolution.Value.ToLower().Split('x', ',', ' ', '\t');
-            if (dimensions.Length == 2)
+            int x, y;
+            if (dimensions.Length == 2 &&
+                int.TryParse(dimensions[0], out x) &&
+                int.TryParse(dimensions[1], out y))
             {
-                int x = int.Parse(dimensions[0]);
-                int y = int.Parse(dimensions[1]);
 
                 StartCoroutine(SetResolution(x, y));
-                useResolutionConfig = true;
+            }
+            else
+            {
+                // ignore invalid value; reset to default
+                Resolution.BoxedValue = "";
             }
         }
 
@@ -142,12 +144,21 @@ namespace GraphicsSettings
                     StartCoroutine(SetResolution(x, y));
             }
 
-            GUILayout.Space(5);
+            if (GUILayout.Toggle(Resolution.Value.Length > 0, new GUIContent("Save", "Ensure resolution is saved for future launches")))
+            {
+                Resolution.BoxedValue = $"{resolutionX}x{resolutionY}";
+            }
+            else
+            {
+                Resolution.BoxedValue = "";
+            }
+
+                GUILayout.Space(5);
             if(GUILayout.Button("Reset", GUILayout.ExpandWidth(false)))
             {
                 var display = Display.displays[SelectedMonitor.Value];
-                if(Screen.width != origResolutionX || Screen.height != origResolutionY)
-                    StartCoroutine(SetResolution(origResolutionX, origResolutionY));
+                if (Screen.width != display.systemWidth || Screen.height != display.systemHeight)
+                    StartCoroutine(SetResolution(display.systemWidth, display.systemHeight));
             }
         }
 
@@ -159,9 +170,6 @@ namespace GraphicsSettings
             UpdateConfigManagerSize();
             resolutionX = Screen.width.ToString();
             resolutionY = Screen.height.ToString();
-
-            if(useResolutionConfig)
-                Resolution.BoxedValue = $"{resolutionX}x{resolutionY}";
 
             if(DisplayMode.Value == SettingEnum.DisplayMode.BorderlessFullscreen)
                 StartCoroutine(RemoveBorder());
