@@ -43,6 +43,8 @@ namespace GraphicsSettings
 
         private string resolutionX = Screen.width.ToString();
         private string resolutionY = Screen.height.ToString();
+        private int prevResolutionX = Screen.width;
+        private int prevResolutionY = Screen.height;
         private bool framerateToggle = false;
         private WinAPI.WindowStyleFlags backupStandard;
         private WinAPI.WindowStyleFlags backupExtended;
@@ -63,7 +65,7 @@ namespace GraphicsSettings
                 int.TryParse(dimensions[1], out y))
             {
 
-                StartCoroutine(SetResolution(x, y));
+                StartCoroutine(SetResolution(x, y, true));
             }
             else
             {
@@ -141,7 +143,7 @@ namespace GraphicsSettings
                 int y = int.Parse(resolutionY);
 
                 if(Screen.width != x || Screen.height != y)
-                    StartCoroutine(SetResolution(x, y));
+                    StartCoroutine(SetResolution(x, y, true));
             }
 
             if (GUILayout.Toggle(Resolution.Value.Length > 0, new GUIContent("Save", "Ensure resolution is saved for future launches")))
@@ -157,13 +159,20 @@ namespace GraphicsSettings
             if(GUILayout.Button("Reset", GUILayout.ExpandWidth(false)))
             {
                 var display = Display.displays[SelectedMonitor.Value];
-                if (Screen.width != display.systemWidth || Screen.height != display.systemHeight)
-                    StartCoroutine(SetResolution(display.systemWidth, display.systemHeight));
+                if (Screen.width != prevResolutionX || Screen.height != prevResolutionY)
+                    StartCoroutine(SetResolution(prevResolutionX, prevResolutionY, false));
             }
         }
 
-        IEnumerator SetResolution(int width, int height)
+        IEnumerator SetResolution(int width, int height, bool savePrevResolution)
         {
+            // Save off the current resolution so the reset button can revert the change
+            if (savePrevResolution)
+            {
+                prevResolutionX = Screen.width;
+                prevResolutionY = Screen.height;
+            }
+
             Screen.SetResolution(width, height, Screen.fullScreen);
             yield return null;
 
