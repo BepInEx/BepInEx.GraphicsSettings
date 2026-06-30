@@ -26,6 +26,8 @@ namespace GraphicsSettings
                                                  "Half vsync synchronizes the output to half the refresh rate of your monitor.";
         private const string DESCRIPTION_FRAMERATELIMIT = "Limits your framerate to whatever value is set. -1 equals unlocked framerate.\n" +
                                                           "VSync has to be disabled for this setting to take effect.";
+        private const string DESCRIPTION_PIXELLIGHTCOUNT = "The amount of pixel lights that can be rendered by Forward render path shaders.\n" +
+                                                           "-1 leaves the game's default amount.";
         private const string DESCRIPTION_ANTIALIASING = "Smooths out jagged edges on objects.";
         private const string DESCRIPTION_RUNINBACKGROUND = "Should the game be running when it is in the background (when the window is not focused)?\n";
         private const string DESCRIPTION_OPTIMIZEINBACKGROUND = "Optimize the game when it is the background and unfocused. " +
@@ -40,6 +42,7 @@ namespace GraphicsSettings
         private ConfigEntry<SettingEnum.AnisotropicFilteringMode> AnisotropicFiltering { get; set; }
         private ConfigEntry<SettingEnum.RunInBackgroundMode> RunInBackground { get; set; }
         private ConfigEntry<bool> OptimizeInBackground { get; set; }
+        private ConfigEntry<int> PixelLightCount { get; set; }
 
         private string resolutionX = Screen.width.ToString();
         private string resolutionY = Screen.height.ToString();
@@ -81,6 +84,7 @@ namespace GraphicsSettings
             SelectedMonitor = Config.Bind(CATEGORY_RENDER, "Selected monitor", 0, new ConfigDescription("", new AcceptableValueList<int>(Enumerable.Range(0, Display.displays.Length).ToArray()), new ConfigurationManagerAttributes { Order = 8 }));
             VSync = Config.Bind(CATEGORY_RENDER, "VSync", SettingEnum.VSyncType.Default, new ConfigDescription(DESCRIPTION_VSYNC, null, new ConfigurationManagerAttributes { Order = 7 }));
             FramerateLimit = Config.Bind(CATEGORY_RENDER, "Framerate limit", Application.targetFrameRate, new ConfigDescription(DESCRIPTION_FRAMERATELIMIT, null, new ConfigurationManagerAttributes { Order = 6, HideDefaultButton = true, CustomDrawer = new Action<ConfigEntryBase>(FramerateLimitDrawer) }));
+            PixelLightCount = Config.Bind(CATEGORY_RENDER, "Pixel light count", -1, new ConfigDescription(DESCRIPTION_PIXELLIGHTCOUNT, new AcceptableValueRange<int>(-1, 32), new ConfigurationManagerAttributes { Order = 5 }));
             AntiAliasing = Config.Bind(CATEGORY_RENDER, "Anti-aliasing multiplier", SettingEnum.AntiAliasingMode.Default, new ConfigDescription(DESCRIPTION_ANTIALIASING));
             AnisotropicFiltering = Config.Bind(CATEGORY_RENDER, "Anisotropic filtering", SettingEnum.AnisotropicFilteringMode.Default, new ConfigDescription(DESCRIPTION_ANISOFILTER));
             RunInBackground = Config.Bind(CATEGORY_GENERAL, "Run in background", SettingEnum.RunInBackgroundMode.Default, new ConfigDescription(DESCRIPTION_RUNINBACKGROUND));
@@ -90,6 +94,11 @@ namespace GraphicsSettings
             SelectedMonitor.SettingChanged += (sender, args) => StartCoroutine(SelectMonitor());
 
             InitSetting(FramerateLimit, SetFramerateLimit);
+            InitSetting(PixelLightCount, () =>
+            {
+                if (PixelLightCount.Value >= 0)
+                    QualitySettings.pixelLightCount = PixelLightCount.Value;
+            });
             InitSetting(VSync, () =>
             {
                 if(VSync.Value != SettingEnum.VSyncType.Default)
